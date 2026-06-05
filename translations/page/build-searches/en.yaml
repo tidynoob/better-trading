@@ -1,0 +1,40 @@
+page:
+  build-searches:
+    ascendancy-label: Ascendancy
+    base-label: Base
+    build-name-label: Build name
+    class-label: Class
+    group-max-label: Score max
+    group-min-label: Score min
+    league-label: League
+    max-label: Max
+    min-label: Min
+    save-button: Save searches
+    save-error-flash: No build searches could be saved.
+    save-success-flash: '{count, plural, =1 {1 build search has been saved.} other {# build searches have been saved.}}'
+    weight-label: Weight
+    import:
+      clear-button: Clear import
+      file-button: Choose .build
+      imported: 'Imported {name}'
+      inventory-slots: '{count, plural, =0 {No inventory slots} =1 {1 inventory slot} other {# inventory slots}}'
+      paste-button: Import JSON
+      paste-label: Paste .build JSON
+      title: Import .build
+    preview:
+      blocked: Blocked
+      button: Preview
+      ready: Ready
+      score-any: Any score
+      score-min: 'Score: {min}+'
+      score-range: 'Score: {min} - {max}'
+      title: '{folderTitle}'
+      weight: '{label} x {weight}'
+    save-result:
+      saved: '{count, plural, =0 {No searches saved.} =1 {1 search saved.} other {# searches saved.}}'
+    templates:
+      button: Templates
+      cancel: Cancel
+      modal-title: Gear slot templates
+      save: Save templates
+      save-success-flash: Gear slot templates have been saved.

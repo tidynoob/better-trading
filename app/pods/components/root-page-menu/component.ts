@@ -37,6 +37,12 @@ export default class RootPageMenu extends Component<Args> {
         isActive: RootPage.PINNED_ITEMS === this.args.currentPage,
       },
       {
+        page: RootPage.BUILD_SEARCHES,
+        icon: 'search',
+        label: this.intl.t('components.root-page-menu.build-searches'),
+        isActive: RootPage.BUILD_SEARCHES === this.args.currentPage,
+      },
+      {
         page: RootPage.HISTORY,
         icon: 'history',
         label: this.intl.t('components.root-page-menu.history'),

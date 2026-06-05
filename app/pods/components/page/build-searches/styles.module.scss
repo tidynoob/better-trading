@@ -1,0 +1,280 @@
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.import-panel {
+  padding-bottom: 10px;
+  border-bottom: 1px solid $gold-alt;
+  margin-bottom: 10px;
+}
+
+.import-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.section-title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.2;
+  color: $white;
+}
+
+.import-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.textarea {
+  display: block;
+  width: 100%;
+  min-height: 90px;
+  padding: 8px;
+  border: 0;
+  background-color: #1e2124;
+  outline: none;
+  resize: vertical;
+  color: $white;
+}
+
+.import-error,
+.import-result {
+  padding: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.import-error {
+  border-left: 3px solid $red;
+  background-color: rgba($red, 0.12);
+  color: $red;
+}
+
+.import-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 3px solid $gold;
+  background-color: rgba($gold, 0.12);
+  color: $white;
+  gap: 8px;
+}
+
+.import-result-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.import-warning-list {
+  padding-left: 22px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: $gold;
+}
+
+.summary-fields {
+  display: grid;
+  margin-bottom: 10px;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.slot-picker {
+  display: grid;
+  margin-bottom: 10px;
+  gap: 5px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.slot-toggle {
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid $gold-alt;
+  background-color: rgba($black, 0.2);
+  font-family: $primary-font;
+  font-size: 13px;
+  color: $white;
+  cursor: pointer;
+
+  input {
+    margin-right: 6px;
+  }
+
+  &.is-selected {
+    border-color: $gold;
+    background-color: rgba($gold, 0.16);
+  }
+}
+
+.slot-editor,
+.preview,
+.save-result,
+.template-editor {
+  padding: 10px 0;
+  border-top: 1px solid $gold-alt;
+}
+
+.slot-header,
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.slot-title,
+.preview-title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.2;
+  color: $white;
+}
+
+.slot-category {
+  font-size: 12px;
+  color: $gray-alt;
+}
+
+.slot-fields {
+  display: grid;
+  margin-bottom: 8px;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 80px 80px;
+}
+
+.inline-field {
+  display: block;
+  font-size: 12px;
+  color: $gray-alt;
+
+  span {
+    display: block;
+    margin-bottom: 4px;
+  }
+}
+
+.input,
+.number-input {
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  background-color: #1e2124;
+  outline: none;
+  color: $white;
+}
+
+.priority-list {
+  display: grid;
+  gap: 4px;
+}
+
+.priority-row {
+  display: grid;
+  opacity: 0.55;
+  align-items: center;
+  min-height: 30px;
+  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) 70px 70px 70px;
+
+  &.is-enabled {
+    opacity: 1;
+  }
+}
+
+.priority-toggle {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  font-size: 13px;
+  color: $white;
+
+  input {
+    flex: 0 0 auto;
+    margin-right: 6px;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.preview-row {
+  padding: 8px;
+  border-left: 3px solid $red;
+  margin-bottom: 8px;
+  background-color: rgba($black, 0.2);
+
+  &.is-ready {
+    border-left-color: $gold;
+  }
+}
+
+.preview-row-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  color: $white;
+}
+
+.preview-details {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+  font-size: 12px;
+  color: $gray-alt;
+  gap: 8px;
+}
+
+.stat-list,
+.warning-list,
+.error-list {
+  padding-left: 18px;
+  margin: 5px 0 0;
+  font-size: 12px;
+}
+
+.stat-list {
+  color: $white;
+}
+
+.warning-list {
+  color: $gold;
+}
+
+.error-list {
+  color: $red;
+}
+
+.template-list {
+  overflow: auto;
+  max-height: 70vh;
+}
+
+.template-editor {
+  &:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .priority-row {
+    grid-template-columns: minmax(0, 1fr) 80px;
+  }
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}

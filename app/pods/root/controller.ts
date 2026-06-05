@@ -13,6 +13,7 @@ const CURRENT_PAGE_KEY = 'current-page';
 
 export enum RootPage {
   BOOKMARKS = 'bookmarks',
+  BUILD_SEARCHES = 'build-searches',
   HISTORY = 'history',
   PINNED_ITEMS = 'pinned-items',
 }
