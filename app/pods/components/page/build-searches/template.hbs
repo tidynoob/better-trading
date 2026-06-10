@@ -1,0 +1,508 @@
+<LoadingContainer
+  @task={{this.loadTemplatesTask}}
+  @size="large"
+>
+  <section local-class="import-panel">
+    <header local-class="import-header">
+      <h2 local-class="section-title">{{t "page.build-searches.import.title"}}</h2>
+
+      <div local-class="import-actions">
+        <Button
+          @theme="blue"
+          @label={{t "page.build-searches.import.file-button"}}
+          @icon="file-import"
+          @fileAccept=".build"
+          @onFileChange={{fn this.importBuildFile}}
+        />
+
+        <Button
+          type="button"
+          disabled={{not this.canImportPastedBuild}}
+          @theme="gold"
+          @label={{t "page.build-searches.import.paste-button"}}
+          @icon="file-import"
+          @onClick={{fn this.importPastedBuild}}
+        />
+      </div>
+    </header>
+
+    <Form::Field @label={{t "page.build-searches.import.paste-label"}}>
+      <textarea
+        value={{this.importJson}}
+        local-class="textarea"
+        {{on "input" (fn this.setImportJson)}}
+      ></textarea>
+    </Form::Field>
+
+    {{#if this.importError}}
+      <div local-class="import-error">{{this.importError}}</div>
+    {{/if}}
+
+    {{#if this.importDraft}}
+      <div local-class="import-result">
+        <div local-class="import-result-copy">
+          <strong>{{t "page.build-searches.import.imported" name=this.importDraftTitle}}</strong>
+          <span>
+            {{t
+              "page.build-searches.import.inventory-slots"
+              count=this.importedInventorySlotCount
+            }}
+          </span>
+        </div>
+
+        <Button
+          type="button"
+          @theme="blue"
+          @label={{t "page.build-searches.import.clear-button"}}
+          @icon="undo"
+          @onClick={{fn this.clearImportedBuild}}
+        />
+      </div>
+    {{/if}}
+
+    {{#if this.importWarnings.length}}
+      <ul local-class="import-warning-list">
+        {{#each this.importWarnings as |warning|}}
+          <li>{{warning}}</li>
+        {{/each}}
+      </ul>
+    {{/if}}
+  </section>
+
+  <div local-class="toolbar">
+    <Button
+      type="button"
+      @theme="blue"
+      @label={{t "page.build-searches.templates.button"}}
+      @icon="cog"
+      @onClick={{fn this.openTemplateSettings}}
+    />
+
+    <Button
+      type="button"
+      disabled={{not this.canPreview}}
+      @theme="gold"
+      @label={{t "page.build-searches.preview.button"}}
+      @icon="search"
+      @onClick={{perform this.previewTask}}
+    />
+  </div>
+
+  <div local-class="summary-fields">
+    <Form::Input
+      @label={{t "page.build-searches.build-name-label"}}
+      @value={{this.buildName}}
+      @onChange={{fn this.setBuildName}}
+    />
+
+    <Form::Input
+      @label={{t "page.build-searches.class-label"}}
+      @value={{this.characterClass}}
+      @onChange={{fn this.setCharacterClass}}
+    />
+
+    <Form::Input
+      @label={{t "page.build-searches.ascendancy-label"}}
+      @value={{this.ascendancy}}
+      @onChange={{fn this.setAscendancy}}
+    />
+
+    <Form::Input
+      @label={{t "page.build-searches.league-label"}}
+      @value={{this.league}}
+      @onChange={{fn this.setLeague}}
+    />
+  </div>
+
+  <div local-class="slot-picker">
+    {{#each this.slotStates as |slot|}}
+      <label local-class="slot-toggle {{if slot.selected "is-selected"}}">
+        <input
+          checked={{slot.selected}}
+          type="checkbox"
+          {{on "change" (fn this.toggleSlotSelection slot.slotId)}}
+        >
+
+        <span>{{slot.label}}</span>
+      </label>
+    {{/each}}
+  </div>
+
+  {{#each this.selectedSlots as |slot|}}
+    <section local-class="slot-editor">
+      <header local-class="slot-header">
+        <h2 local-class="slot-title">{{slot.label}}</h2>
+
+        <div local-class="slot-category">{{slot.category}}</div>
+      </header>
+
+      <div local-class="slot-fields">
+        <label local-class="inline-field">
+          <span>{{t "page.build-searches.base-label"}}</span>
+          <input
+            value={{slot.base}}
+            type="text"
+            local-class="input"
+            {{on "input" (fn this.updateSlotBase slot.slotId)}}
+          >
+        </label>
+
+        <label local-class="inline-field">
+          <span>{{t "page.build-searches.group-type-label"}}</span>
+          <select
+            local-class="select"
+            {{on "change" (fn this.setSlotGroupType slot.slotId)}}
+          >
+            <option value="count" selected={{eq slot.groupType "count"}}>
+              {{t "page.build-searches.group-type-count"}}
+            </option>
+            <option value="weight2" selected={{eq slot.groupType "weight2"}}>
+              {{t "page.build-searches.group-type-weight2"}}
+            </option>
+          </select>
+        </label>
+
+        {{#if (eq slot.groupType "weight2")}}
+          <label local-class="inline-field">
+            <span>{{t "page.build-searches.group-min-label"}}</span>
+            <input
+              value={{slot.groupMin}}
+              type="number"
+              step="1"
+              local-class="number-input"
+              {{on "input" (fn this.updateSlotNumber slot.slotId "groupMin")}}
+            >
+          </label>
+
+          <label local-class="inline-field">
+            <span>{{t "page.build-searches.group-max-label"}}</span>
+            <input
+              value={{slot.groupMax}}
+              type="number"
+              step="1"
+              local-class="number-input"
+              {{on "input" (fn this.updateSlotNumber slot.slotId "groupMax")}}
+            >
+          </label>
+        {{else}}
+          <label local-class="inline-field">
+            <span>{{t "page.build-searches.count-min-label"}}</span>
+            <input
+              value={{slot.countMin}}
+              type="number"
+              step="1"
+              min="1"
+              local-class="number-input"
+              {{on "input" (fn this.updateSlotNumber slot.slotId "countMin")}}
+            >
+          </label>
+        {{/if}}
+      </div>
+
+      <div local-class="priority-list">
+        {{#each slot.priorities as |priority|}}
+          <div local-class="priority-row {{if priority.enabled "is-enabled"}}">
+            <label local-class="priority-toggle">
+              <input
+                checked={{priority.enabled}}
+                type="checkbox"
+                {{on "change" (fn this.togglePriority slot.slotId priority.statKey)}}
+              >
+
+              <span>{{priority.label}}</span>
+            </label>
+
+            <input
+              aria-label={{t "page.build-searches.weight-label"}}
+              disabled={{or (not priority.enabled) (eq slot.groupType "count")}}
+              value={{priority.weight}}
+              type="number"
+              step="0.05"
+              local-class="number-input"
+              {{on "input" (fn this.updatePriorityNumber slot.slotId priority.statKey "weight")}}
+            >
+
+            <input
+              aria-label={{t "page.build-searches.min-label"}}
+              disabled={{not priority.enabled}}
+              value={{priority.min}}
+              type="number"
+              step="1"
+              local-class="number-input"
+              {{on "input" (fn this.updatePriorityNumber slot.slotId priority.statKey "min")}}
+            >
+
+            <input
+              aria-label={{t "page.build-searches.max-label"}}
+              disabled={{not priority.enabled}}
+              value={{priority.max}}
+              type="number"
+              step="1"
+              local-class="number-input"
+              {{on "input" (fn this.updatePriorityNumber slot.slotId priority.statKey "max")}}
+            >
+          </div>
+        {{/each}}
+      </div>
+    </section>
+  {{/each}}
+
+  {{#if this.previewSlots}}
+    <section local-class="preview">
+      <header local-class="preview-header">
+        <h2 local-class="preview-title">
+          {{t "page.build-searches.preview.title" folderTitle=this.folderTitle}}
+        </h2>
+
+        <Button
+          type="button"
+          disabled={{not this.previewCanBeSaved}}
+          @theme="gold"
+          @label={{t "page.build-searches.save-button"}}
+          @icon="save"
+          @onClick={{perform this.savePreviewTask}}
+        />
+      </header>
+
+      {{#each this.previewSlots as |previewSlot|}}
+        <div local-class="preview-row {{if previewSlot.query "is-ready" "is-blocked"}}">
+          <div local-class="preview-row-header">
+            <strong>{{previewSlot.title}}</strong>
+            <span>
+              {{#if previewSlot.query}}
+                {{t "page.build-searches.preview.ready"}}
+              {{else}}
+                {{t "page.build-searches.preview.blocked"}}
+              {{/if}}
+            </span>
+          </div>
+
+          <div local-class="preview-details">
+            <div>{{previewSlot.category}}</div>
+            {{#if previewSlot.base}}
+              <div>{{previewSlot.base}}</div>
+            {{/if}}
+          </div>
+
+          <div local-class="preview-fields">
+            {{#if (eq previewSlot.groupType "weight2")}}
+              <label local-class="preview-inline-field">
+                <span>{{t "page.build-searches.group-min-label"}}</span>
+                <input
+                  value={{previewSlot.groupMin}}
+                  type="number"
+                  step="1"
+                  local-class="number-input"
+                  {{on "input" (fn this.updatePreviewSlotNumber previewSlot.slotId "groupMin")}}
+                >
+              </label>
+
+              <label local-class="preview-inline-field">
+                <span>{{t "page.build-searches.group-max-label"}}</span>
+                <input
+                  value={{previewSlot.groupMax}}
+                  type="number"
+                  step="1"
+                  local-class="number-input"
+                  {{on "input" (fn this.updatePreviewSlotNumber previewSlot.slotId "groupMax")}}
+                >
+              </label>
+            {{else}}
+              <label local-class="preview-inline-field">
+                <span>{{t "page.build-searches.preview.count-min-label"}}</span>
+                <input
+                  value={{previewSlot.countMin}}
+                  type="number"
+                  step="1"
+                  min="1"
+                  max={{previewSlot.mappedStats.length}}
+                  local-class="number-input"
+                  {{on "input" (fn this.updatePreviewSlotNumber previewSlot.slotId "countMin")}}
+                >
+                <span>
+                  {{t
+                    "page.build-searches.preview.count-of"
+                    count=previewSlot.mappedStats.length
+                  }}
+                </span>
+              </label>
+            {{/if}}
+          </div>
+
+          {{#if previewSlot.mappedStats.length}}
+            <ul local-class="stat-list">
+              {{#each previewSlot.mappedStats as |stat|}}
+                <li>
+                  {{#if (eq previewSlot.groupType "weight2")}}
+                    <span local-class="preview-stat-row">
+                      <span>{{stat.label}}</span>
+                      <input
+                        aria-label={{t "page.build-searches.weight-label"}}
+                        value={{stat.weight}}
+                        type="number"
+                        step="0.05"
+                        local-class="number-input"
+                        {{on
+                          "input"
+                          (fn this.updatePreviewPriorityWeight previewSlot.slotId stat.statKey)
+                        }}
+                      >
+                    </span>
+                  {{else}}
+                    {{stat.label}}
+                  {{/if}}
+                </li>
+              {{/each}}
+            </ul>
+          {{/if}}
+
+          {{#if previewSlot.unmappedStats.length}}
+            <ul local-class="warning-list">
+              {{#each previewSlot.unmappedStats as |stat|}}
+                <li>{{stat.label}}: {{stat.reason}}</li>
+              {{/each}}
+            </ul>
+          {{/if}}
+
+          {{#if previewSlot.errors.length}}
+            <ul local-class="error-list">
+              {{#each previewSlot.errors as |error|}}
+                <li>{{error}}</li>
+              {{/each}}
+            </ul>
+          {{/if}}
+        </div>
+      {{/each}}
+    </section>
+  {{/if}}
+
+  {{#if this.saveResult}}
+    <section local-class="save-result">
+      <div>
+        {{t "page.build-searches.save-result.saved" count=this.saveResult.saved.length}}
+      </div>
+
+      {{#if this.saveResult.failed.length}}
+        <ul local-class="error-list">
+          {{#each this.saveResult.failed as |failedSearch|}}
+            <li>{{failedSearch.title}}: {{failedSearch.message}}</li>
+          {{/each}}
+        </ul>
+      {{/if}}
+    </section>
+  {{/if}}
+</LoadingContainer>
+
+{{#if this.isEditingTemplates}}
+  <Modal
+    @title={{t "page.build-searches.templates.modal-title"}}
+    @onClose={{fn this.closeTemplateSettings}}
+  >
+    <div local-class="template-list">
+      {{#each this.stagedTemplates as |template|}}
+        <section local-class="template-editor">
+          <header local-class="slot-header">
+            <h2 local-class="slot-title">{{template.label}}</h2>
+            <div local-class="slot-category">{{template.category}}</div>
+          </header>
+
+          <div local-class="slot-fields">
+            <label local-class="inline-field">
+              <span>{{t "page.build-searches.group-type-label"}}</span>
+              <select
+                local-class="select"
+                {{on "change" (fn this.setTemplateGroupType template.slotId)}}
+              >
+                <option value="count" selected={{eq template.groupType "count"}}>
+                  {{t "page.build-searches.group-type-count"}}
+                </option>
+                <option value="weight2" selected={{eq template.groupType "weight2"}}>
+                  {{t "page.build-searches.group-type-weight2"}}
+                </option>
+              </select>
+            </label>
+
+            {{#if (eq template.groupType "weight2")}}
+              <label local-class="inline-field">
+                <span>{{t "page.build-searches.group-min-label"}}</span>
+                <input
+                  value={{template.groupMin}}
+                  type="number"
+                  step="1"
+                  local-class="number-input"
+                  {{on "input" (fn this.updateTemplateNumber template.slotId "groupMin")}}
+                >
+              </label>
+
+              <label local-class="inline-field">
+                <span>{{t "page.build-searches.group-max-label"}}</span>
+                <input
+                  value={{template.groupMax}}
+                  type="number"
+                  step="1"
+                  local-class="number-input"
+                  {{on "input" (fn this.updateTemplateNumber template.slotId "groupMax")}}
+                >
+              </label>
+            {{else}}
+              <label local-class="inline-field">
+                <span>{{t "page.build-searches.count-min-label"}}</span>
+                <input
+                  value={{template.countMin}}
+                  type="number"
+                  step="1"
+                  min="1"
+                  local-class="number-input"
+                  {{on "input" (fn this.updateTemplateNumber template.slotId "countMin")}}
+                >
+              </label>
+            {{/if}}
+          </div>
+
+          <div local-class="priority-list">
+            {{#each template.priorities as |priority|}}
+              <div local-class="priority-row {{if priority.enabled "is-enabled"}}">
+                <label local-class="priority-toggle">
+                  <input
+                    checked={{priority.enabled}}
+                    type="checkbox"
+                    {{on "change" (fn this.toggleTemplatePriority template.slotId priority.statKey)}}
+                  >
+
+                  <span>{{priority.label}}</span>
+                </label>
+
+                <input
+                  aria-label={{t "page.build-searches.weight-label"}}
+                  disabled={{or (not priority.enabled) (eq template.groupType "count")}}
+                  value={{priority.weight}}
+                  type="number"
+                  step="0.05"
+                  local-class="number-input"
+                  {{on "input" (fn this.updateTemplatePriorityWeight template.slotId priority.statKey)}}
+                >
+              </div>
+            {{/each}}
+          </div>
+        </section>
+      {{/each}}
+    </div>
+
+    <footer local-class="modal-actions">
+      <Button
+        type="button"
+        @theme="blue"
+        @label={{t "page.build-searches.templates.cancel"}}
+        @onClick={{fn this.closeTemplateSettings}}
+      />
+
+      <Button
+        type="button"
+        @theme="gold"
+        @label={{t "page.build-searches.templates.save"}}
+        @icon="save"
+        @onClick={{perform this.persistTemplatesTask}}
+      />
+    </footer>
+  </Modal>
+{{/if}}

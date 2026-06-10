@@ -75,6 +75,8 @@ module.exports = function (environment) {
         'thumbtack',
         'archive',
         'undo',
+        'search',
+        'cog',
       ],
       'free-brands-svg-icons': ['github', 'discord'],
     },

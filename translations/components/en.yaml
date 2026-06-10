@@ -8,6 +8,7 @@ components:
     button: Copy to clipboard
     button-copied: Copied
   root-page-menu:
+    build-searches: Build searches
     bookmarks: Bookmarks
     history: History
     pinned-items: Pinned items

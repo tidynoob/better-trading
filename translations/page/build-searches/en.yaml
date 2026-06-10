@@ -1,0 +1,42 @@
+page:
+  build-searches:
+    ascendancy-label: Ascendancy
+    base-label: Base
+    build-name-label: Build name
+    class-label: Class
+    count-min-label: Mod count
+    group-max-label: Score max
+    group-min-label: Score min
+    group-type-count: Count of modifiers
+    group-type-label: Match mode
+    group-type-weight2: Weighted sum v2
+    league-label: League
+    max-label: Max
+    min-label: Min
+    save-button: Save searches
+    save-error-flash: No build searches could be saved.
+    save-success-flash: '{count, plural, =1 {1 build search has been saved.} other {# build searches have been saved.}}'
+    weight-label: Weight
+    import:
+      clear-button: Clear import
+      file-button: Choose .build
+      imported: 'Imported {name}'
+      inventory-slots: '{count, plural, =0 {No inventory slots} =1 {1 inventory slot} other {# inventory slots}}'
+      paste-button: Import JSON
+      paste-label: Paste .build JSON
+      title: Import .build
+    preview:
+      blocked: Blocked
+      button: Preview
+      count-min-label: At least
+      count-of: 'of {count, plural, =1 {1 modifier} other {# modifiers}}'
+      ready: Ready
+      title: '{folderTitle}'
+    save-result:
+      saved: '{count, plural, =0 {No searches saved.} =1 {1 search saved.} other {# searches saved.}}'
+    templates:
+      button: Templates
+      cancel: Cancel
+      modal-title: Gear slot templates
+      save: Save templates
+      save-success-flash: Gear slot templates have been saved.
