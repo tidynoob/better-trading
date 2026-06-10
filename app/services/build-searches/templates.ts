@@ -169,7 +169,11 @@ export default class BuildSearchesTemplates extends Service {
   async fetchTemplates(): Promise<BuildSearchGearSlotTemplate[]> {
     const persistedTemplates = await this.storage.getValue<BuildSearchGearSlotTemplate[]>(TEMPLATES_STORAGE_KEY);
 
-    return this.mergeTemplates(persistedTemplates || []);
+    try {
+      return this.mergeTemplates(Array.isArray(persistedTemplates) ? persistedTemplates : []);
+    } catch {
+      return this.mergeTemplates([]);
+    }
   }
 
   async persistTemplates(templates: BuildSearchGearSlotTemplate[]) {
@@ -184,6 +188,10 @@ export default class BuildSearchesTemplates extends Service {
       ...this.cloneTemplate(template),
       selected: false,
     }));
+  }
+
+  defaultSlotStates(): BuildSearchSlotState[] {
+    return this.createSlotStates(this.mergeTemplates([]));
   }
 
   cloneTemplates(templates: BuildSearchGearSlotTemplate[]) {
@@ -203,7 +211,9 @@ export default class BuildSearchesTemplates extends Service {
       countMin: this.numberValue(template.countMin, null),
       groupMin: this.numberValue(template.groupMin, DEFAULT_GROUP_MIN),
       groupMax: this.numberValue(template.groupMax, null),
-      priorities: this.normalizePriorities(template.priorities || defaultTemplate.priorities),
+      priorities: this.normalizePriorities(
+        Array.isArray(template.priorities) ? template.priorities : defaultTemplate.priorities
+      ),
     };
   }
 

@@ -447,6 +447,10 @@ export default class PageBuildSearches extends Component {
   }
 
   private applyImportDraft(draft: BuildSearchImportDraft) {
+    if (this.slotStates.length === 0) {
+      this.slotStates = this.gearSlotTemplates.defaultSlotStates();
+    }
+
     const mappingResult = this.buildFileSlotMapper.mapDraftToSlotStates(draft, this.slotStates);
 
     this.importDraft = draft;
