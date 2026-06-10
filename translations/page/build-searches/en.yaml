@@ -28,13 +28,10 @@ page:
     preview:
       blocked: Blocked
       button: Preview
-      count-min: '{min, plural, =1 {At least 1 of {count} modifiers} other {At least # of {count} modifiers}}'
+      count-min-label: At least
+      count-of: 'of {count, plural, =1 {1 modifier} other {# modifiers}}'
       ready: Ready
-      score-any: Any score
-      score-min: 'Score: {min}+'
-      score-range: 'Score: {min} - {max}'
       title: '{folderTitle}'
-      weight: '{label} x {weight}'
     save-result:
       saved: '{count, plural, =0 {No searches saved.} =1 {1 search saved.} other {# searches saved.}}'
     templates:

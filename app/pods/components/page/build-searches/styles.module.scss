@@ -238,6 +238,37 @@
   gap: 8px;
 }
 
+.preview-fields {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+  gap: 8px;
+}
+
+.preview-inline-field {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: $gray-alt;
+  gap: 6px;
+
+  .number-input {
+    width: 70px;
+  }
+}
+
+.preview-stat-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  .number-input {
+    width: 70px;
+    height: 24px;
+  }
+}
+
 .stat-list,
 .warning-list,
 .error-list {

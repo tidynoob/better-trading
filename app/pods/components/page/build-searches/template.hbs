@@ -282,32 +282,50 @@
             {{#if previewSlot.base}}
               <div>{{previewSlot.base}}</div>
             {{/if}}
+          </div>
+
+          <div local-class="preview-fields">
             {{#if (eq previewSlot.groupType "weight2")}}
-              {{#if previewSlot.groupMin}}
-                {{#if previewSlot.groupMax}}
-                  <div>
-                    {{t
-                      "page.build-searches.preview.score-range"
-                      min=previewSlot.groupMin
-                      max=previewSlot.groupMax
-                    }}
-                  </div>
-                {{else}}
-                  <div>
-                    {{t "page.build-searches.preview.score-min" min=previewSlot.groupMin}}
-                  </div>
-                {{/if}}
-              {{else}}
-                <div>{{t "page.build-searches.preview.score-any"}}</div>
-              {{/if}}
+              <label local-class="preview-inline-field">
+                <span>{{t "page.build-searches.group-min-label"}}</span>
+                <input
+                  value={{previewSlot.groupMin}}
+                  type="number"
+                  step="1"
+                  local-class="number-input"
+                  {{on "input" (fn this.updatePreviewSlotNumber previewSlot.slotId "groupMin")}}
+                >
+              </label>
+
+              <label local-class="preview-inline-field">
+                <span>{{t "page.build-searches.group-max-label"}}</span>
+                <input
+                  value={{previewSlot.groupMax}}
+                  type="number"
+                  step="1"
+                  local-class="number-input"
+                  {{on "input" (fn this.updatePreviewSlotNumber previewSlot.slotId "groupMax")}}
+                >
+              </label>
             {{else}}
-              <div>
-                {{t
-                  "page.build-searches.preview.count-min"
-                  min=previewSlot.countMin
-                  count=previewSlot.mappedStats.length
-                }}
-              </div>
+              <label local-class="preview-inline-field">
+                <span>{{t "page.build-searches.preview.count-min-label"}}</span>
+                <input
+                  value={{previewSlot.countMin}}
+                  type="number"
+                  step="1"
+                  min="1"
+                  max={{previewSlot.mappedStats.length}}
+                  local-class="number-input"
+                  {{on "input" (fn this.updatePreviewSlotNumber previewSlot.slotId "countMin")}}
+                >
+                <span>
+                  {{t
+                    "page.build-searches.preview.count-of"
+                    count=previewSlot.mappedStats.length
+                  }}
+                </span>
+              </label>
             {{/if}}
           </div>
 
@@ -316,7 +334,20 @@
               {{#each previewSlot.mappedStats as |stat|}}
                 <li>
                   {{#if (eq previewSlot.groupType "weight2")}}
-                    {{t "page.build-searches.preview.weight" label=stat.label weight=stat.weight}}
+                    <span local-class="preview-stat-row">
+                      <span>{{stat.label}}</span>
+                      <input
+                        aria-label={{t "page.build-searches.weight-label"}}
+                        value={{stat.weight}}
+                        type="number"
+                        step="0.05"
+                        local-class="number-input"
+                        {{on
+                          "input"
+                          (fn this.updatePreviewPriorityWeight previewSlot.slotId stat.statKey)
+                        }}
+                      >
+                    </span>
                   {{else}}
                     {{stat.label}}
                   {{/if}}

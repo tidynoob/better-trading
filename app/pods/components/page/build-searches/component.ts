@@ -3,7 +3,7 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import Component from '@glimmer/component';
 import {tracked} from '@glimmer/tracking';
-import {dropTask} from 'ember-concurrency-decorators';
+import {dropTask, restartableTask} from 'ember-concurrency-decorators';
 
 // Services
 import BuildSearchesBuildFileImporter from 'better-trading/services/build-searches/build-file-importer';
@@ -25,6 +25,7 @@ import {
   BuildSearchSaveResult,
   BuildSearchSlotState,
 } from 'better-trading/types/build-searches';
+import {Task} from 'better-trading/types/ember-concurrency';
 
 interface InputEvent {
   target: HTMLInputElement;
@@ -126,6 +127,7 @@ export default class PageBuildSearches extends Component {
 
   get previewCanBeSaved() {
     if (!this.previewSlots) return false;
+    if ((this.regeneratePreviewTask as Task).isRunning) return false;
 
     return this.previewSlots.some((previewSlot) => Boolean(previewSlot.query));
   }
@@ -161,6 +163,14 @@ export default class PageBuildSearches extends Component {
 
   @dropTask
   *previewTask() {
+    if (!this.canPreview) return;
+
+    this.previewSlots = yield this.queryGenerator.generatePreview(this.selectedSlots);
+    this.saveResult = null;
+  }
+
+  @restartableTask
+  *regeneratePreviewTask() {
     if (!this.canPreview) return;
 
     this.previewSlots = yield this.queryGenerator.generatePreview(this.selectedSlots);
@@ -308,6 +318,29 @@ export default class PageBuildSearches extends Component {
   }
 
   @action
+  updatePreviewSlotNumber(slotId: string, field: SlotNumberField, event: InputEvent) {
+    const parsedValue = this.parseOptionalNumber(event.target.value);
+    const value = field === 'countMin' && parsedValue !== null ? Math.max(1, parsedValue) : parsedValue;
+
+    this.updateSlotStateFromPreview(slotId, (slot) => ({
+      ...slot,
+      [field]: value,
+    }));
+  }
+
+  @action
+  updatePreviewPriorityWeight(slotId: string, statKey: string, event: InputEvent) {
+    const weight = this.parseRequiredNumber(event.target.value);
+
+    this.updateSlotStateFromPreview(slotId, (slot) => ({
+      ...slot,
+      priorities: slot.priorities.map((priority) =>
+        priority.statKey === statKey ? {...priority, weight} : priority
+      ),
+    }));
+  }
+
+  @action
   openTemplateSettings() {
     this.stagedTemplates = this.gearSlotTemplates.cloneTemplates(this.templates);
     this.isEditingTemplates = true;
@@ -355,6 +388,16 @@ export default class PageBuildSearches extends Component {
   private updateSlotState(slotId: string, updater: (slot: BuildSearchSlotState) => BuildSearchSlotState) {
     this.slotStates = this.slotStates.map((slot) => (slot.slotId === slotId ? updater(slot) : slot));
     this.clearGeneratedState();
+  }
+
+  private updateSlotStateFromPreview(
+    slotId: string,
+    updater: (slot: BuildSearchSlotState) => BuildSearchSlotState
+  ) {
+    this.slotStates = this.slotStates.map((slot) => (slot.slotId === slotId ? updater(slot) : slot));
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    (this.regeneratePreviewTask as Task).perform();
   }
 
   private updatePriority(
