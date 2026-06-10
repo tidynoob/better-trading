@@ -9,6 +9,7 @@ import {BuildSearchSlotState} from 'better-trading/types/build-searches';
 
 declare const require: (moduleName: string) => any;
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const {ARGS_SET} = require('@glimmer/component/-private/component');
 
 describe('Unit | Component | Page | Build Searches', () => {
@@ -33,6 +34,8 @@ describe('Unit | Component | Page | Build Searches', () => {
         title: 'Boots search',
         category: 'armour.boots',
         base: '',
+        groupType: 'count',
+        countMin: null,
         groupMin: 80,
         groupMax: null,
         mappedStats: [],
@@ -50,6 +53,7 @@ describe('Unit | Component | Page | Build Searches', () => {
     component.importJson = JSON.stringify({
       name: 'Imported Titan',
       ascendancy: 'Warrior1',
+      // eslint-disable-next-line camelcase
       inventory_slots: [{inventory_id: 'Weapon1', additional_text: 'Stat Priority'}],
     });
 
@@ -72,6 +76,8 @@ describe('Unit | Component | Page | Build Searches', () => {
         title: 'Boots search',
         category: 'armour.boots',
         base: '',
+        groupType: 'count',
+        countMin: null,
         groupMin: 80,
         groupMax: null,
         mappedStats: [],
@@ -110,6 +116,8 @@ describe('Unit | Component | Page | Build Searches', () => {
         title: 'Boots search',
         category: 'armour.boots',
         base: '',
+        groupType: 'count',
+        countMin: null,
         groupMin: 80,
         groupMax: null,
         mappedStats: [],
@@ -143,6 +151,8 @@ const slotState = (slotId: string, label: string, selected: boolean): BuildSearc
   category: slotId === 'boots' ? 'armour.boots' : 'weapon',
   base: slotId === 'boots' ? 'Expert Greaves' : '',
   rarity: 'rare',
+  groupType: 'count',
+  countMin: null,
   groupMin: 80,
   groupMax: null,
   priorities: [

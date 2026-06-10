@@ -160,6 +160,8 @@ const previewSlot = (slotId: string): BuildSearchPreviewSlot => ({
   title: `${slotId[0].toUpperCase()}${slotId.slice(1)} search`,
   category: '',
   base: '',
+  groupType: 'count',
+  countMin: null,
   groupMin: null,
   groupMax: null,
   mappedStats: [],

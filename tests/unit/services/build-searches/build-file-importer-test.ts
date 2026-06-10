@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 // Vendor
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
@@ -76,6 +78,7 @@ describe('Unit | Services | Build Searches | Build File Importer', () => {
   it('imports local .build files', async () => {
     const draft = await service.importFile({
       name: 'warrior.build',
+      // eslint-disable-next-line @typescript-eslint/promise-function-async
       text: () => Promise.resolve(JSON.stringify({name: 'File build', inventory_slots: []})),
     });
 
@@ -86,6 +89,7 @@ describe('Unit | Services | Build Searches | Build File Importer', () => {
     try {
       await service.importFile({
         name: 'warrior.txt',
+        // eslint-disable-next-line @typescript-eslint/promise-function-async
         text: () => Promise.resolve(JSON.stringify({name: 'Wrong extension'})),
       });
 

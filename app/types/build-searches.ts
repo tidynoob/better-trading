@@ -1,3 +1,5 @@
+export type BuildSearchGroupType = 'count' | 'weight2';
+
 export interface BuildSearchStatOption {
   key: string;
   label: string;
@@ -20,6 +22,8 @@ export interface BuildSearchGearSlotTemplate {
   category: string;
   base: string;
   rarity: string;
+  groupType: BuildSearchGroupType;
+  countMin: number | null;
   groupMin: number | null;
   groupMax: number | null;
   priorities: BuildSearchPriority[];
@@ -67,7 +71,7 @@ export interface BuildSearchUnmappedStat {
 export interface BuildSearchTradeQuery {
   query: object;
   sort: {
-    price: string;
+    [sortKey: string]: string;
   };
 }
 
@@ -76,6 +80,8 @@ export interface BuildSearchPreviewSlot {
   title: string;
   category: string;
   base: string;
+  groupType: BuildSearchGroupType;
+  countMin: number | null;
   groupMin: number | null;
   groupMax: number | null;
   mappedStats: BuildSearchMappedStat[];

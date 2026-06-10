@@ -18,6 +18,7 @@ import TradeLocation from 'better-trading/services/trade-location';
 // Types
 import {
   BuildSearchGearSlotTemplate,
+  BuildSearchGroupType,
   BuildSearchImportDraft,
   BuildSearchPreviewSlot,
   BuildSearchPriority,
@@ -29,7 +30,11 @@ interface InputEvent {
   target: HTMLInputElement;
 }
 
-type SlotNumberField = 'groupMin' | 'groupMax';
+interface SelectEvent {
+  target: HTMLSelectElement;
+}
+
+type SlotNumberField = 'groupMin' | 'groupMax' | 'countMin';
 type PriorityNumberField = 'weight' | 'min' | 'max';
 
 // Constants
@@ -37,10 +42,6 @@ const DEFAULT_BUILD_NAME = 'Manual build';
 const DEFAULT_POE2_LEAGUE = 'poe2/Standard';
 
 export default class PageBuildSearches extends Component {
-  constructor(owner: unknown, args: {}) {
-    super(owner, args);
-  }
-
   @service('build-searches/build-file-importer')
   buildFileImporter: BuildSearchesBuildFileImporter;
 
@@ -278,6 +279,16 @@ export default class PageBuildSearches extends Component {
   }
 
   @action
+  setSlotGroupType(slotId: string, event: SelectEvent) {
+    const groupType = this.parseGroupType(event.target.value);
+
+    this.updateSlotState(slotId, (slot) => ({
+      ...slot,
+      groupType,
+    }));
+  }
+
+  @action
   togglePriority(slotId: string, statKey: string, event: InputEvent) {
     this.updatePriority(slotId, statKey, (priority) => ({
       ...priority,
@@ -312,6 +323,16 @@ export default class PageBuildSearches extends Component {
     this.updateStagedTemplate(slotId, (template) => ({
       ...template,
       [field]: this.parseOptionalNumber(event.target.value),
+    }));
+  }
+
+  @action
+  setTemplateGroupType(slotId: string, event: SelectEvent) {
+    const groupType = this.parseGroupType(event.target.value);
+
+    this.updateStagedTemplate(slotId, (template) => ({
+      ...template,
+      groupType,
     }));
   }
 
@@ -396,6 +417,10 @@ export default class PageBuildSearches extends Component {
 
   private errorMessage(error: unknown) {
     return error instanceof Error ? error.message : 'The .build file could not be imported.';
+  }
+
+  private parseGroupType(value: string): BuildSearchGroupType {
+    return value === 'weight2' ? 'weight2' : 'count';
   }
 
   private parseOptionalNumber(value: string): number | null {

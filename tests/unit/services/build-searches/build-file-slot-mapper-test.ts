@@ -138,6 +138,8 @@ const slotStates = (): BuildSearchSlotState[] =>
     category: '',
     base: '',
     rarity: 'rare',
+    groupType: 'count',
+    countMin: null,
     groupMin: 80,
     groupMax: null,
     priorities:

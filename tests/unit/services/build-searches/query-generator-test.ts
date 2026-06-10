@@ -26,7 +26,7 @@ describe('Unit | Services | Build Searches | Query Generator', () => {
     statMappingMock.verify();
   });
 
-  it('generates a weighted PoE2 trade query for mapped stats', async () => {
+  it('generates a count-of-modifiers PoE2 trade query by default', async () => {
     statMappingMock
       .expects('fetchValidTradeStatIds')
       .once()
@@ -41,6 +41,8 @@ describe('Unit | Services | Build Searches | Query Generator', () => {
     const [previewSlot] = await service.generatePreview([slotWithPriorities()]);
 
     expect(previewSlot.errors).to.deep.equal([]);
+    expect(previewSlot.groupType).to.equal('count');
+    expect(previewSlot.countMin).to.equal(1);
     expect(previewSlot.query).to.deep.equal({
       query: {
         status: {
@@ -49,7 +51,81 @@ describe('Unit | Services | Build Searches | Query Generator', () => {
         type: 'Expert Greaves',
         stats: [
           {
-            type: 'weight',
+            type: 'count',
+            value: {
+              min: 1,
+            },
+            filters: [
+              {
+                id: 'pseudo.pseudo_total_life',
+                value: {
+                  min: 50,
+                },
+              },
+            ],
+          },
+        ],
+        filters: {
+          [TYPE_FILTERS_KEY]: {
+            filters: {
+              category: {
+                option: 'armour.boots',
+              },
+              rarity: {
+                option: 'rare',
+              },
+            },
+          },
+        },
+      },
+      sort: {
+        price: 'asc',
+      },
+    });
+  });
+
+  it('clamps an explicit modifier count to the mapped stat count', async () => {
+    statMappingMock
+      .expects('fetchValidTradeStatIds')
+      .once()
+      .returns(Promise.resolve(['pseudo.pseudo_total_life']));
+    statMappingMock.expects('getMapping').once().withArgs('maximumLife').returns({
+      key: 'maximumLife',
+      label: 'Maximum life',
+      tradeStatId: 'pseudo.pseudo_total_life',
+      defaultWeight: 1,
+    });
+
+    const [previewSlot] = await service.generatePreview([slotWithPriorities({countMin: 5})]);
+
+    expect(previewSlot.countMin).to.equal(1);
+  });
+
+  it('generates a weighted sum v2 PoE2 trade query for mapped stats', async () => {
+    statMappingMock
+      .expects('fetchValidTradeStatIds')
+      .once()
+      .returns(Promise.resolve(['pseudo.pseudo_total_life']));
+    statMappingMock.expects('getMapping').once().withArgs('maximumLife').returns({
+      key: 'maximumLife',
+      label: 'Maximum life',
+      tradeStatId: 'pseudo.pseudo_total_life',
+      defaultWeight: 1,
+    });
+
+    const [previewSlot] = await service.generatePreview([slotWithPriorities({groupType: 'weight2'})]);
+
+    expect(previewSlot.errors).to.deep.equal([]);
+    expect(previewSlot.groupType).to.equal('weight2');
+    expect(previewSlot.query).to.deep.equal({
+      query: {
+        status: {
+          option: 'online',
+        },
+        type: 'Expert Greaves',
+        stats: [
+          {
+            type: 'weight2',
             value: {
               min: 80,
             },
@@ -78,7 +154,7 @@ describe('Unit | Services | Build Searches | Query Generator', () => {
         },
       },
       sort: {
-        price: 'asc',
+        'statgroup.0': 'desc',
       },
     });
   });
@@ -111,24 +187,26 @@ describe('Unit | Services | Build Searches | Query Generator', () => {
     statMappingMock.expects('getMapping').once().withArgs('imported-unmapped:level-of-all-melee-skills:1').returns(null);
 
     const [previewSlot] = await service.generatePreview([
-      slotWithPriorities([
-        {
-          statKey: 'maximumLife',
-          label: 'Maximum life',
-          enabled: true,
-          weight: 1,
-          min: 50,
-          max: null,
-        },
-        {
-          statKey: 'imported-unmapped:level-of-all-melee-skills:1',
-          label: 'Level of all melee skills',
-          enabled: true,
-          weight: 0,
-          min: null,
-          max: null,
-        },
-      ]),
+      slotWithPriorities({
+        priorities: [
+          {
+            statKey: 'maximumLife',
+            label: 'Maximum life',
+            enabled: true,
+            weight: 1,
+            min: 50,
+            max: null,
+          },
+          {
+            statKey: 'imported-unmapped:level-of-all-melee-skills:1',
+            label: 'Level of all melee skills',
+            enabled: true,
+            weight: 0,
+            min: null,
+            max: null,
+          },
+        ],
+      }),
     ]);
 
     expect(previewSlot.query).not.to.be.null;
@@ -138,7 +216,7 @@ describe('Unit | Services | Build Searches | Query Generator', () => {
   });
 });
 
-const slotWithPriorities = (priorities?: BuildSearchSlotState['priorities']): BuildSearchSlotState => {
+const slotWithPriorities = (overrides?: Partial<BuildSearchSlotState>): BuildSearchSlotState => {
   return {
     selected: true,
     slotId: 'boots',
@@ -146,9 +224,11 @@ const slotWithPriorities = (priorities?: BuildSearchSlotState['priorities']): Bu
     category: 'armour.boots',
     base: 'Expert Greaves',
     rarity: 'rare',
+    groupType: 'count',
+    countMin: null,
     groupMin: 80,
     groupMax: null,
-    priorities: priorities || [
+    priorities: [
       {
         statKey: 'maximumLife',
         label: 'Maximum life',
@@ -158,5 +238,6 @@ const slotWithPriorities = (priorities?: BuildSearchSlotState['priorities']): Bu
         max: null,
       },
     ],
+    ...overrides,
   };
 };

@@ -7,6 +7,7 @@ import Storage from 'better-trading/services/storage';
 // Types
 import {
   BuildSearchGearSlotTemplate,
+  BuildSearchGroupType,
   BuildSearchPriority,
   BuildSearchSlotState,
 } from 'better-trading/types/build-searches';
@@ -20,6 +21,8 @@ interface DefaultTemplate {
   category: string;
   base?: string;
   rarity?: string;
+  groupType?: BuildSearchGroupType;
+  countMin?: number | null;
   groupMin: number;
   groupMax?: number | null;
   priorities: Array<Partial<BuildSearchPriority>>;
@@ -27,6 +30,7 @@ interface DefaultTemplate {
 
 // Constants
 const TEMPLATES_STORAGE_KEY = 'build-search-gear-slot-templates';
+const DEFAULT_GROUP_TYPE: BuildSearchGroupType = 'count';
 const DEFAULT_GROUP_MIN = 80;
 const ATTRIBUTE_WEIGHT = 0.25;
 const CHAOS_RESISTANCE_WEIGHT = 0.5;
@@ -195,6 +199,8 @@ export default class BuildSearchesTemplates extends Service {
       category: this.stringValue(template.category, defaultTemplate.category),
       base: this.stringValue(template.base, ''),
       rarity: this.stringValue(template.rarity, 'rare'),
+      groupType: this.groupTypeValue(template.groupType),
+      countMin: this.numberValue(template.countMin, null),
       groupMin: this.numberValue(template.groupMin, DEFAULT_GROUP_MIN),
       groupMax: this.numberValue(template.groupMax, null),
       priorities: this.normalizePriorities(template.priorities || defaultTemplate.priorities),
@@ -236,6 +242,10 @@ export default class BuildSearchesTemplates extends Service {
 
   private stringValue(value: string | undefined, fallback: string) {
     return value || fallback;
+  }
+
+  private groupTypeValue(value: BuildSearchGroupType | undefined): BuildSearchGroupType {
+    return value === 'weight2' ? 'weight2' : DEFAULT_GROUP_TYPE;
   }
 
   private numberValue(value: number | null | undefined, fallback: number | null) {

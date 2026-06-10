@@ -43,7 +43,10 @@
         <div local-class="import-result-copy">
           <strong>{{t "page.build-searches.import.imported" name=this.importDraftTitle}}</strong>
           <span>
-            {{t "page.build-searches.import.inventory-slots" count=this.importedInventorySlotCount}}
+            {{t
+              "page.build-searches.import.inventory-slots"
+              count=this.importedInventorySlotCount
+            }}
           </span>
         </div>
 
@@ -145,26 +148,55 @@
         </label>
 
         <label local-class="inline-field">
-          <span>{{t "page.build-searches.group-min-label"}}</span>
-          <input
-            value={{slot.groupMin}}
-            type="number"
-            step="1"
-            local-class="number-input"
-            {{on "input" (fn this.updateSlotNumber slot.slotId "groupMin")}}
+          <span>{{t "page.build-searches.group-type-label"}}</span>
+          <select
+            local-class="select"
+            {{on "change" (fn this.setSlotGroupType slot.slotId)}}
           >
+            <option value="count" selected={{eq slot.groupType "count"}}>
+              {{t "page.build-searches.group-type-count"}}
+            </option>
+            <option value="weight2" selected={{eq slot.groupType "weight2"}}>
+              {{t "page.build-searches.group-type-weight2"}}
+            </option>
+          </select>
         </label>
 
-        <label local-class="inline-field">
-          <span>{{t "page.build-searches.group-max-label"}}</span>
-          <input
-            value={{slot.groupMax}}
-            type="number"
-            step="1"
-            local-class="number-input"
-            {{on "input" (fn this.updateSlotNumber slot.slotId "groupMax")}}
-          >
-        </label>
+        {{#if (eq slot.groupType "weight2")}}
+          <label local-class="inline-field">
+            <span>{{t "page.build-searches.group-min-label"}}</span>
+            <input
+              value={{slot.groupMin}}
+              type="number"
+              step="1"
+              local-class="number-input"
+              {{on "input" (fn this.updateSlotNumber slot.slotId "groupMin")}}
+            >
+          </label>
+
+          <label local-class="inline-field">
+            <span>{{t "page.build-searches.group-max-label"}}</span>
+            <input
+              value={{slot.groupMax}}
+              type="number"
+              step="1"
+              local-class="number-input"
+              {{on "input" (fn this.updateSlotNumber slot.slotId "groupMax")}}
+            >
+          </label>
+        {{else}}
+          <label local-class="inline-field">
+            <span>{{t "page.build-searches.count-min-label"}}</span>
+            <input
+              value={{slot.countMin}}
+              type="number"
+              step="1"
+              min="1"
+              local-class="number-input"
+              {{on "input" (fn this.updateSlotNumber slot.slotId "countMin")}}
+            >
+          </label>
+        {{/if}}
       </div>
 
       <div local-class="priority-list">
@@ -182,7 +214,7 @@
 
             <input
               aria-label={{t "page.build-searches.weight-label"}}
-              disabled={{not priority.enabled}}
+              disabled={{or (not priority.enabled) (eq slot.groupType "count")}}
               value={{priority.weight}}
               type="number"
               step="0.05"
@@ -250,29 +282,45 @@
             {{#if previewSlot.base}}
               <div>{{previewSlot.base}}</div>
             {{/if}}
-            {{#if previewSlot.groupMin}}
-              {{#if previewSlot.groupMax}}
-                <div>
-                  {{t
-                    "page.build-searches.preview.score-range"
-                    min=previewSlot.groupMin
-                    max=previewSlot.groupMax
-                  }}
-                </div>
+            {{#if (eq previewSlot.groupType "weight2")}}
+              {{#if previewSlot.groupMin}}
+                {{#if previewSlot.groupMax}}
+                  <div>
+                    {{t
+                      "page.build-searches.preview.score-range"
+                      min=previewSlot.groupMin
+                      max=previewSlot.groupMax
+                    }}
+                  </div>
+                {{else}}
+                  <div>
+                    {{t "page.build-searches.preview.score-min" min=previewSlot.groupMin}}
+                  </div>
+                {{/if}}
               {{else}}
-                <div>
-                  {{t "page.build-searches.preview.score-min" min=previewSlot.groupMin}}
-                </div>
+                <div>{{t "page.build-searches.preview.score-any"}}</div>
               {{/if}}
             {{else}}
-              <div>{{t "page.build-searches.preview.score-any"}}</div>
+              <div>
+                {{t
+                  "page.build-searches.preview.count-min"
+                  min=previewSlot.countMin
+                  count=previewSlot.mappedStats.length
+                }}
+              </div>
             {{/if}}
           </div>
 
           {{#if previewSlot.mappedStats.length}}
             <ul local-class="stat-list">
               {{#each previewSlot.mappedStats as |stat|}}
-                <li>{{t "page.build-searches.preview.weight" label=stat.label weight=stat.weight}}</li>
+                <li>
+                  {{#if (eq previewSlot.groupType "weight2")}}
+                    {{t "page.build-searches.preview.weight" label=stat.label weight=stat.weight}}
+                  {{else}}
+                    {{stat.label}}
+                  {{/if}}
+                </li>
               {{/each}}
             </ul>
           {{/if}}
@@ -329,26 +377,55 @@
 
           <div local-class="slot-fields">
             <label local-class="inline-field">
-              <span>{{t "page.build-searches.group-min-label"}}</span>
-              <input
-                value={{template.groupMin}}
-                type="number"
-                step="1"
-                local-class="number-input"
-                {{on "input" (fn this.updateTemplateNumber template.slotId "groupMin")}}
+              <span>{{t "page.build-searches.group-type-label"}}</span>
+              <select
+                local-class="select"
+                {{on "change" (fn this.setTemplateGroupType template.slotId)}}
               >
+                <option value="count" selected={{eq template.groupType "count"}}>
+                  {{t "page.build-searches.group-type-count"}}
+                </option>
+                <option value="weight2" selected={{eq template.groupType "weight2"}}>
+                  {{t "page.build-searches.group-type-weight2"}}
+                </option>
+              </select>
             </label>
 
-            <label local-class="inline-field">
-              <span>{{t "page.build-searches.group-max-label"}}</span>
-              <input
-                value={{template.groupMax}}
-                type="number"
-                step="1"
-                local-class="number-input"
-                {{on "input" (fn this.updateTemplateNumber template.slotId "groupMax")}}
-              >
-            </label>
+            {{#if (eq template.groupType "weight2")}}
+              <label local-class="inline-field">
+                <span>{{t "page.build-searches.group-min-label"}}</span>
+                <input
+                  value={{template.groupMin}}
+                  type="number"
+                  step="1"
+                  local-class="number-input"
+                  {{on "input" (fn this.updateTemplateNumber template.slotId "groupMin")}}
+                >
+              </label>
+
+              <label local-class="inline-field">
+                <span>{{t "page.build-searches.group-max-label"}}</span>
+                <input
+                  value={{template.groupMax}}
+                  type="number"
+                  step="1"
+                  local-class="number-input"
+                  {{on "input" (fn this.updateTemplateNumber template.slotId "groupMax")}}
+                >
+              </label>
+            {{else}}
+              <label local-class="inline-field">
+                <span>{{t "page.build-searches.count-min-label"}}</span>
+                <input
+                  value={{template.countMin}}
+                  type="number"
+                  step="1"
+                  min="1"
+                  local-class="number-input"
+                  {{on "input" (fn this.updateTemplateNumber template.slotId "countMin")}}
+                >
+              </label>
+            {{/if}}
           </div>
 
           <div local-class="priority-list">
@@ -366,7 +443,7 @@
 
                 <input
                   aria-label={{t "page.build-searches.weight-label"}}
-                  disabled={{not priority.enabled}}
+                  disabled={{or (not priority.enabled) (eq template.groupType "count")}}
                   value={{priority.weight}}
                   type="number"
                   step="0.05"

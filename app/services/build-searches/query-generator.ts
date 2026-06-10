@@ -46,6 +46,8 @@ export default class BuildSearchesQueryGenerator extends Service {
       title: `${slot.label} search`,
       category: slot.category,
       base: slot.base,
+      groupType: slot.groupType,
+      countMin: this.resolveCountMin(slot, mappedStats),
       groupMin: slot.groupMin,
       groupMax: slot.groupMax,
       mappedStats,
@@ -129,19 +131,7 @@ export default class BuildSearchesQueryGenerator extends Service {
       status: {
         option: 'online',
       },
-      stats: [
-        {
-          type: 'weight',
-          value: this.minMaxValue(slot.groupMin, slot.groupMax),
-          filters: mappedStats.map((stat) => ({
-            id: stat.tradeStatId,
-            value: {
-              ...this.minMaxValue(stat.min, stat.max),
-              weight: stat.weight,
-            },
-          })),
-        },
-      ],
+      stats: [this.buildStatGroup(slot, mappedStats)],
       filters: {
         [TYPE_FILTERS_KEY]: {
           filters: typeFilters,
@@ -154,10 +144,41 @@ export default class BuildSearchesQueryGenerator extends Service {
 
     return {
       query,
-      sort: {
-        price: 'asc',
-      },
+      sort: slot.groupType === 'weight2' ? {'statgroup.0': 'desc'} : {price: 'asc'},
     };
+  }
+
+  private buildStatGroup(slot: BuildSearchSlotState, mappedStats: BuildSearchMappedStat[]): object {
+    if (slot.groupType === 'weight2') {
+      return {
+        type: 'weight2',
+        value: this.minMaxValue(slot.groupMin, slot.groupMax),
+        filters: mappedStats.map((stat) => ({
+          id: stat.tradeStatId,
+          value: {
+            ...this.minMaxValue(stat.min, stat.max),
+            weight: stat.weight,
+          },
+        })),
+      };
+    }
+
+    return {
+      type: 'count',
+      value: {
+        min: this.resolveCountMin(slot, mappedStats),
+      },
+      filters: mappedStats.map((stat) => ({
+        id: stat.tradeStatId,
+        value: this.minMaxValue(stat.min, stat.max),
+      })),
+    };
+  }
+
+  private resolveCountMin(slot: BuildSearchSlotState, mappedStats: BuildSearchMappedStat[]): number {
+    if (slot.countMin === null) return mappedStats.length;
+
+    return Math.max(1, Math.min(slot.countMin, mappedStats.length));
   }
 
   private minMaxValue(min: number | null, max: number | null): MinMaxValue {

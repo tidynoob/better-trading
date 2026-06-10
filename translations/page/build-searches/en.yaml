@@ -4,8 +4,12 @@ page:
     base-label: Base
     build-name-label: Build name
     class-label: Class
+    count-min-label: Mod count
     group-max-label: Score max
     group-min-label: Score min
+    group-type-count: Count of modifiers
+    group-type-label: Match mode
+    group-type-weight2: Weighted sum v2
     league-label: League
     max-label: Max
     min-label: Min
@@ -24,6 +28,7 @@ page:
     preview:
       blocked: Blocked
       button: Preview
+      count-min: '{min, plural, =1 {At least 1 of {count} modifiers} other {At least # of {count} modifiers}}'
       ready: Ready
       score-any: Any score
       score-min: 'Score: {min}+'
