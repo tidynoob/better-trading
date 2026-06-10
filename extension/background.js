@@ -14,4 +14,19 @@ extensionApi.runtime.onMessage.addListener(function(request, sender, sendRespons
 
     return true;
   }
+
+  if (request.type === 'open-tabs') {
+    if (Array.isArray(request.urls)) {
+      request.urls.forEach(function(url) {
+        if (typeof url !== 'string') return;
+        if (url.indexOf('https://www.pathofexile.com/') !== 0) return;
+
+        extensionApi.tabs.create({url: url, active: false});
+      });
+    }
+
+    sendResponse(null);
+
+    return true;
+  }
 });

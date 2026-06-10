@@ -13,6 +13,7 @@ import {BookmarksFolderStruct, BookmarksTradeStruct} from 'better-trading/types/
 import TradeLocation from 'better-trading/services/trade-location';
 import Bookmarks from 'better-trading/services/bookmarks';
 import SearchPanel from 'better-trading/services/search-panel';
+import ExtensionBackground from 'better-trading/services/extension-background';
 import {TradeLocationChangeEvent} from 'better-trading/types/trade-location';
 import FlashMessages from 'ember-cli-flash/services/flash-messages';
 import IntlService from 'ember-intl/services/intl';
@@ -27,6 +28,15 @@ interface Args {
   onArchiveToggle: () => void;
 }
 
+interface SnipeTradeEntry {
+  trade: BookmarksTradeStruct;
+  selected: boolean;
+}
+
+interface InputEvent {
+  target: HTMLInputElement;
+}
+
 export default class BookmarksFolder extends Component<Args> {
   @service('trade-location')
   tradeLocation: TradeLocation;
@@ -36,6 +46,9 @@ export default class BookmarksFolder extends Component<Args> {
 
   @service('search-panel')
   searchPanel: SearchPanel;
+
+  @service('extension-background')
+  extensionBackground: ExtensionBackground;
 
   @service('flash-messages')
   flashMessages: FlashMessages;
@@ -61,6 +74,12 @@ export default class BookmarksFolder extends Component<Args> {
   @tracked
   isExporting: boolean = false;
 
+  @tracked
+  isSniping: boolean = false;
+
+  @tracked
+  snipeEntries: SnipeTradeEntry[] = [];
+
   get folderId() {
     return this.args.folder.id;
   }
@@ -73,6 +92,18 @@ export default class BookmarksFolder extends Component<Args> {
     return Boolean(this.args.folder.archivedAt);
   }
 
+  get snipeableTrades() {
+    return (this.trades || []).filter((trade) => trade.location.type === 'search');
+  }
+
+  get canStartSnipe() {
+    return this.isExpanded && !this.isSniping && this.snipeableTrades.length > 0;
+  }
+
+  get selectedSnipeCount() {
+    return this.snipeEntries.filter((entry) => entry.selected).length;
+  }
+
   @dropTask
   *initialLoadTradesTask() {
     this.trades = yield this.bookmarks.fetchTradesByFolderId(this.args.folder.id);
@@ -83,6 +114,7 @@ export default class BookmarksFolder extends Component<Args> {
     try {
       yield this.bookmarks.deleteTrade(deletingTrade, this.folderId);
       this.trades = yield this.bookmarks.fetchTradesByFolderId(this.args.folder.id);
+      this.cancelSnipe();
 
       this.flashMessages.success(
         this.intl.t('page.bookmarks.folder.delete-trade-success-flash', {title: deletingTrade.title})
@@ -107,6 +139,7 @@ export default class BookmarksFolder extends Component<Args> {
       const isNewlyCreated = !trade.id;
       yield this.bookmarks.persistTrade(trade, this.folderId);
       this.trades = yield this.bookmarks.fetchTradesByFolderId(this.args.folder.id);
+      this.cancelSnipe();
 
       const successTranslationKey = isNewlyCreated
         ? 'page.bookmarks.folder.create-trade-success-flash'
@@ -137,6 +170,7 @@ export default class BookmarksFolder extends Component<Args> {
       );
 
       this.trades = yield this.bookmarks.fetchTradesByFolderId(this.args.folder.id);
+      this.cancelSnipe();
 
       this.flashMessages.success(
         this.intl.t('page.bookmarks.folder.persist-trade-location-success-flash', {title: trade.title})
@@ -152,6 +186,7 @@ export default class BookmarksFolder extends Component<Args> {
   *toggleTradeCompletionTask(trade: BookmarksTradeStruct) {
     yield this.bookmarks.toggleTradeCompletion(trade, this.folderId);
     this.trades = yield this.bookmarks.fetchTradesByFolderId(this.args.folder.id);
+    this.cancelSnipe();
   }
 
   @action
@@ -203,6 +238,50 @@ export default class BookmarksFolder extends Component<Args> {
   @action
   stopTradesReordering() {
     this.isReorderingTrades = false;
+  }
+
+  @action
+  startSnipe() {
+    if (this.isReorderingTrades || !this.canStartSnipe) return;
+
+    this.snipeEntries = this.snipeableTrades.map((trade) => ({trade, selected: true}));
+    this.isSniping = true;
+  }
+
+  @action
+  cancelSnipe() {
+    this.isSniping = false;
+    this.snipeEntries = [];
+  }
+
+  @action
+  toggleSnipeTrade(toggledEntry: SnipeTradeEntry, event: InputEvent) {
+    this.snipeEntries = this.snipeEntries.map((entry) =>
+      entry === toggledEntry ? {...entry, selected: event.target.checked} : entry
+    );
+  }
+
+  @action
+  openSnipeTrades() {
+    if (!this.currentLeague) return;
+
+    const league = this.currentLeague;
+    const urls = this.snipeEntries
+      .filter((entry) => entry.selected)
+      .map(
+        (entry) =>
+          `${this.tradeLocation.getTradeUrl(
+            entry.trade.location.version,
+            entry.trade.location.type,
+            entry.trade.location.slug,
+            league
+          )}/live`
+      );
+
+    if (urls.length === 0) return;
+
+    this.extensionBackground.openTabs(urls);
+    this.cancelSnipe();
   }
 
   @action

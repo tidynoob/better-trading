@@ -22,6 +22,9 @@ page:
       restore-folder: Restore
       export-folder: Export/Share
       open-live-trade: Live search
+      snipe-trades: Open live searches
+      open-snipe-trades: '{count, plural, =1 {Open 1 live search} other {Open # live searches}}'
+      cancel-snipe: Cancel
       create-trade: Register current trade
       copy-trade-to-clipboard: Copy URL to clipboard
       copy-trade-to-clipboard-success-flash: 'Trade URL for "{title}" has been copied to the clipboard.'
