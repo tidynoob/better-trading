@@ -153,3 +153,33 @@
 .folder-actions-new-trade {
   flex: 1 1 auto;
 }
+
+.snipe-toggle {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  padding: 6px 7px;
+  font-family: $primary-font;
+  color: rgba($white, 0.6);
+  cursor: pointer;
+
+  input {
+    margin-right: 6px;
+  }
+
+  &.is-selected {
+    color: $white;
+  }
+}
+
+.snipe-actions {
+  display: flex;
+  align-items: center;
+  width: calc(100% - 10px);
+  margin: 5px;
+  gap: 5px;
+}
+
+.snipe-actions-confirm {
+  flex: 1 1 auto;
+}

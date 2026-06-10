@@ -13,6 +13,14 @@ export default class ExtensionBackground extends Service {
       });
     });
   }
+
+  openTabs(urls: string[]) {
+    try {
+      extensionApi().runtime.sendMessage({type: 'open-tabs', urls}, () => undefined);
+    } catch (_error) {
+      urls.forEach((url) => window.open(url));
+    }
+  }
 }
 
 declare module '@ember/service' {

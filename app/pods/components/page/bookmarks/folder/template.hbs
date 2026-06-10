@@ -52,6 +52,18 @@
         />
       </ContextualMenu>
 
+      {{#if this.canStartSnipe}}
+        <button
+          type="button"
+          local-class="header-action"
+          title={{t "page.bookmarks.folder.snipe-trades"}}
+          aria-label={{t "page.bookmarks.folder.snipe-trades"}}
+          {{on "click" (fn this.startSnipe)}}
+        >
+          <FaIcon @icon="crosshairs" />
+        </button>
+      {{/if}}
+
       {{#component
         @dragHandle
         tagName="button"
@@ -68,91 +80,127 @@
       @task={{this.initialLoadTradesTask}}
       @size="small"
     >
-      <SortableGroup
-        {{did-insert (fn this.watchLeagueChange)}}
-        {{will-destroy (fn this.teardownLeagueChange)}}
-        local-class="trades {{if this.isReorderingTrades "is-reordering"}}"
-        @tagName="ul"
-        @model={{this.trades}}
-        @onChange={{perform this.reorderTradesTask}}
-        as |group|
-      >
-        {{#each this.trades key="id" as |trade|}}
-          {{#component
-            group.item
-            local-class="trade"
-            tagName="li"
-            model=trade
-            onDragStart=(fn this.startTradesReordering)
-            onDragStop=(fn this.stopTradesReordering)
-          as |dragItem|
-          }}
-            <a href={{trade-url trade.location league=this.currentLeague}} local-class="trade-link">
-              {{#if trade.completedAt}}
-                <span local-class="trade-link-completed">
-                  <FaIcon @icon="check"  />
-                </span>
-              {{/if}}
+      {{#if this.isSniping}}
+        <ul local-class="trades">
+          {{#each this.snipeEntries key="trade.id" as |entry|}}
+            <li local-class="trade">
+              <label local-class="snipe-toggle {{if entry.selected "is-selected"}}">
+                <input
+                  checked={{entry.selected}}
+                  type="checkbox"
+                  {{on "change" (fn this.toggleSnipeTrade entry)}}
+                >
 
-              {{trade.title}}
-            </a>
+                <span>{{entry.trade.title}}</span>
+              </label>
+            </li>
+          {{/each}}
+        </ul>
 
-            <div local-class="trade-actions">
-              <ContextualMenu local-class="trade-action" as |MenuItem|>
-                <MenuItem
-                  @label={{t "page.bookmarks.folder.copy-trade-to-clipboard"}}
-                  @onClick={{fn this.copyToClipboard trade}}
-                />
-                {{#if (eq trade.location.type "search")}}
-                  <MenuItem
-                    @href={{trade-url trade.location league=this.currentLeague suffix="/live"}}
-                    @label={{t "page.bookmarks.folder.open-live-trade"}}
-                  />
+        <div local-class="snipe-actions">
+          <Button
+            type="button"
+            local-class="snipe-actions-confirm"
+            disabled={{eq this.selectedSnipeCount 0}}
+            @theme="gold"
+            @label={{t "page.bookmarks.folder.open-snipe-trades" count=this.selectedSnipeCount}}
+            @onClick={{fn this.openSnipeTrades}}
+          />
+
+          <Button
+            type="button"
+            @theme="blue"
+            @label={{t "page.bookmarks.folder.cancel-snipe"}}
+            @onClick={{fn this.cancelSnipe}}
+          />
+        </div>
+      {{else}}
+        <SortableGroup
+          {{did-insert (fn this.watchLeagueChange)}}
+          {{will-destroy (fn this.teardownLeagueChange)}}
+          local-class="trades {{if this.isReorderingTrades "is-reordering"}}"
+          @tagName="ul"
+          @model={{this.trades}}
+          @onChange={{perform this.reorderTradesTask}}
+          as |group|
+        >
+          {{#each this.trades key="id" as |trade|}}
+            {{#component
+              group.item
+              local-class="trade"
+              tagName="li"
+              model=trade
+              onDragStart=(fn this.startTradesReordering)
+              onDragStop=(fn this.stopTradesReordering)
+            as |dragItem|
+            }}
+              <a href={{trade-url trade.location league=this.currentLeague}} local-class="trade-link">
+                {{#if trade.completedAt}}
+                  <span local-class="trade-link-completed">
+                    <FaIcon @icon="check"  />
+                  </span>
                 {{/if}}
-                <MenuItem
-                  @label={{t "page.bookmarks.folder.update-trade-location"}}
-                  @onClick={{perform this.updateTradeLocationTask trade}}
-                />
-                <MenuItem
-                  @label={{if
-                    trade.completedAt
-                    (t "page.bookmarks.folder.uncomplete-trade")
-                    (t "page.bookmarks.folder.complete-trade")
-                  }}
-                  @onClick={{perform this.toggleTradeCompletionTask trade}}
-                />
-                <MenuItem
-                  @label={{t "page.bookmarks.folder.edit-trade"}}
-                  @onClick={{fn this.editTrade trade}}
-                />
-                <MenuItem
-                  @label={{t "page.bookmarks.folder.delete-trade"}}
-                  @onClick={{fn this.deleteTrade trade}}
-                />
-              </ContextualMenu>
 
-              {{#component
-                dragItem.handle
-                tagName="button"
-                type="button"
-                local-class="trade-action"
-              }}
-                <FaIcon @icon="sort"/>
-              {{/component}}
-            </div>
-          {{/component}}
-        {{/each}}
-      </SortableGroup>
+                {{trade.title}}
+              </a>
 
-      <div local-class="folder-actions">
-        <Button
-          type="button"
-          local-class="folder-actions-new-trade"
-          @theme="gold"
-          @label={{t "page.bookmarks.folder.create-trade"}}
-          @onClick={{fn this.createTrade}}
-        />
-      </div>
+              <div local-class="trade-actions">
+                <ContextualMenu local-class="trade-action" as |MenuItem|>
+                  <MenuItem
+                    @label={{t "page.bookmarks.folder.copy-trade-to-clipboard"}}
+                    @onClick={{fn this.copyToClipboard trade}}
+                  />
+                  {{#if (eq trade.location.type "search")}}
+                    <MenuItem
+                      @href={{trade-url trade.location league=this.currentLeague suffix="/live"}}
+                      @label={{t "page.bookmarks.folder.open-live-trade"}}
+                    />
+                  {{/if}}
+                  <MenuItem
+                    @label={{t "page.bookmarks.folder.update-trade-location"}}
+                    @onClick={{perform this.updateTradeLocationTask trade}}
+                  />
+                  <MenuItem
+                    @label={{if
+                      trade.completedAt
+                      (t "page.bookmarks.folder.uncomplete-trade")
+                      (t "page.bookmarks.folder.complete-trade")
+                    }}
+                    @onClick={{perform this.toggleTradeCompletionTask trade}}
+                  />
+                  <MenuItem
+                    @label={{t "page.bookmarks.folder.edit-trade"}}
+                    @onClick={{fn this.editTrade trade}}
+                  />
+                  <MenuItem
+                    @label={{t "page.bookmarks.folder.delete-trade"}}
+                    @onClick={{fn this.deleteTrade trade}}
+                  />
+                </ContextualMenu>
+
+                {{#component
+                  dragItem.handle
+                  tagName="button"
+                  type="button"
+                  local-class="trade-action"
+                }}
+                  <FaIcon @icon="sort"/>
+                {{/component}}
+              </div>
+            {{/component}}
+          {{/each}}
+        </SortableGroup>
+
+        <div local-class="folder-actions">
+          <Button
+            type="button"
+            local-class="folder-actions-new-trade"
+            @theme="gold"
+            @label={{t "page.bookmarks.folder.create-trade"}}
+            @onClick={{fn this.createTrade}}
+          />
+        </div>
+      {{/if}}
     </LoadingContainer>
   {{/if}}
 </div>
