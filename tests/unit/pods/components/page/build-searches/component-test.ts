@@ -71,6 +71,24 @@ describe('Unit | Component | Page | Build Searches', () => {
     expect(component.saveResult).to.be.null;
   });
 
+  it('seeds default gear slots when importing a .build before templates have loaded', function () {
+    component.gearSlotTemplates = this.owner.lookup('service:build-searches/templates');
+    component.slotStates = [];
+    component.importJson = JSON.stringify({
+      name: 'Imported Titan',
+      ascendancy: 'Warrior1',
+      // eslint-disable-next-line camelcase
+      inventory_slots: [{inventory_id: 'Boots1', additional_text: 'Stat Priority'}],
+    });
+
+    component.importPastedBuild();
+
+    expect(component.slotStates).to.have.length(11);
+    expect(component.slotStates.find(({slotId}) => slotId === 'boots')?.selected).to.be.true;
+    expect(component.importWarnings).to.deep.equal([]);
+    expect(component.importError).to.equal('');
+  });
+
   it('clears stale preview and save state when an imported slot is edited', () => {
     component.slotStates = [slotState('boots', 'Boots', true)];
     component.previewSlots = [
